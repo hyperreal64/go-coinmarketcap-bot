@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	webhookURL   = "https://discordapp.com/api/webhooks/749106215346372608/OH1L_--z1cHn9CZUAGH5FN3XE3oisj93bAWJwrvhd9h9GszLzLJIhxwxSXGi0eEpjcr9"
+	webhookURL   = ""
 	btcAvatarURL = "https://github.com/hyperreal64/cryptocurrency-icons/blob/master/128/color/btc.png?raw=true"
 	ethAvatarURL = "https://github.com/hyperreal64/cryptocurrency-icons/blob/master/32/color/eth.png?raw=true"
 	batAvatarURL = "https://github.com/hyperreal64/cryptocurrency-icons/blob/master/128/color/bat.png?raw=true"
