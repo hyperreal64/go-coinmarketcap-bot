@@ -16,7 +16,7 @@ import (
 const (
 	webhookURL   = ""
 	btcAvatarURL = "https://github.com/hyperreal64/cryptocurrency-icons/blob/master/128/color/btc.png?raw=true"
-	ethAvatarURL = "https://github.com/hyperreal64/cryptocurrency-icons/blob/master/32/color/eth.png?raw=true"
+	ethAvatarURL = "https://github.com/hyperreal64/cryptocurrency-icons/blob/master/128/color/eth.png?raw=true"
 	batAvatarURL = "https://github.com/hyperreal64/cryptocurrency-icons/blob/master/128/color/bat.png?raw=true"
 )
 
