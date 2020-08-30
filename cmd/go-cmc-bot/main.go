@@ -14,11 +14,12 @@ import (
 )
 
 const (
-	webhookURL   = ""
 	btcAvatarURL = "https://github.com/hyperreal64/cryptocurrency-icons/blob/master/128/color/btc.png?raw=true"
 	ethAvatarURL = "https://github.com/hyperreal64/cryptocurrency-icons/blob/master/128/color/eth.png?raw=true"
 	batAvatarURL = "https://github.com/hyperreal64/cryptocurrency-icons/blob/master/128/color/bat.png?raw=true"
 )
+
+var webhookURL = strings.Trim(os.Getenv("DISCORD_WEBHOOK_URL"), "\n")
 
 const usage = `
 go-cmc-bot
@@ -77,10 +78,10 @@ func GetJSONPayload(content string, avatarURL string) (io.Reader, error) {
 
 }
 
-// ExecuteWebhook ---
-func ExecuteWebhook(url string, payload io.Reader) error {
+// SendWHReq ---
+func SendWHReq(webhookURL string, payload io.Reader) error {
 
-	req, err := http.NewRequest("POST", url, payload)
+	req, err := http.NewRequest("POST", webhookURL, payload)
 	if err != nil {
 		return errors.Wrap(err, "Failed to execute HTTP request")
 	}
@@ -98,6 +99,25 @@ func ExecuteWebhook(url string, payload io.Reader) error {
 	return nil
 }
 
+// ExecWebhook ---
+func ExecWebhook(coin string, avatarURL string) error {
+
+	quotes, err := GetCoinQuotes(coin)
+	wrapfQuoteError(err, coin)
+
+	payload, err := GetJSONPayload(quotes, avatarURL)
+	if err != nil {
+		return errors.Wrap(err, "Failed to get JSON payload")
+	}
+
+	if err = SendWHReq(webhookURL, payload); err != nil {
+		return errors.Wrap(err, "Failed to execute webhook")
+	}
+
+	return nil
+}
+
+// Abstract some error handling
 func logFatalErr(err error) {
 	if err != nil {
 		log.Fatalln(err)
@@ -113,24 +133,6 @@ func wrapfQuoteError(err error, fstring string) error {
 	return nil
 }
 
-// ExecQuoteWebhook ---
-func ExecQuoteWebhook(coin string, avatarURL string) error {
-
-	quotes, err := GetCoinQuotes(coin)
-	wrapfQuoteError(err, coin)
-
-	payload, err := GetJSONPayload(quotes, avatarURL)
-	if err != nil {
-		return errors.Wrap(err, "Failed to get JSON payload")
-	}
-
-	if err = ExecuteWebhook(webhookURL, payload); err != nil {
-		return errors.Wrap(err, "Failed to execute webhook")
-	}
-
-	return nil
-}
-
 func main() {
 	args := os.Args[1:]
 
@@ -139,19 +141,19 @@ func main() {
 		return
 	}
 
-	switch args[0] {
+	switch strings.ToLower(args[0]) {
 	case "btc":
-		if err := ExecQuoteWebhook("BTC", btcAvatarURL); err != nil {
+		if err := ExecWebhook("BTC", btcAvatarURL); err != nil {
 			logFatalErr(err)
 		}
 
 	case "eth":
-		if err := ExecQuoteWebhook("ETH", ethAvatarURL); err != nil {
+		if err := ExecWebhook("ETH", ethAvatarURL); err != nil {
 			logFatalErr(err)
 		}
 
 	case "bat":
-		if err := ExecQuoteWebhook("BAT", batAvatarURL); err != nil {
+		if err := ExecWebhook("BAT", batAvatarURL); err != nil {
 			logFatalErr(err)
 		}
 	}
