@@ -8,6 +8,11 @@ go get -u github.com/hyperreal64/go-coinmarketcap-bot/...
 ```
 
 The above should install the `go-cmc-bot` binary into `$GOPATH/bin`.
+The binary requires the following environment variables be defined:
+```bash
+export DISCORD_WEBHOOK_URL
+export CMC_PRO_API_KEY
+```
 
 ## TODO
 * Support potentially all cryptocurrencies
