@@ -11,15 +11,15 @@ import (
 
 	cmc "github.com/miguelmota/go-coinmarketcap/pro/v1"
 	"github.com/pkg/errors"
+	"golang.org/x/text/message"
 )
 
 const (
-	btcAvatarURL = "https://github.com/hyperreal64/cryptocurrency-icons/blob/master/128/color/btc.png?raw=true"
-	ethAvatarURL = "https://github.com/hyperreal64/cryptocurrency-icons/blob/master/128/color/eth.png?raw=true"
-	batAvatarURL = "https://github.com/hyperreal64/cryptocurrency-icons/blob/master/128/color/bat.png?raw=true"
+	avatarURL    = "https://github.com/hyperreal64/cryptocurrency-icons/blob/master/128/color"
+	btcAvatarURL = avatarURL + "/btc.png?raw=true"
+	ethAvatarURL = avatarURL + "/eth.png?raw=true"
+	batAvatarURL = avatarURL + "/bat.png?raw=true"
 )
-
-var webhookURL = strings.Trim(os.Getenv("DISCORD_WEBHOOK_URL"), "\n")
 
 const usage = `
 go-cmc-bot
@@ -52,9 +52,10 @@ func GetCoinQuotes(symbol string) (string, error) {
 		percentChange24HString string
 	)
 
+	p := message.NewPrinter(message.MatchLanguage("en"))
 	for _, quote := range quotes {
-		priceString = fmt.Sprintf("%s: $%.2f\n", quote.Symbol, quote.Quote["USD"].Price)
-		percentChange24HString = fmt.Sprintf("Percent Change 24 hours: %.2f%%\n", quote.Quote["USD"].PercentChange24H)
+		priceString = p.Sprintf("%s: $%.2f\n", quote.Symbol, quote.Quote["USD"].Price)
+		percentChange24HString = p.Sprintf("Percent Change 24 hours: %.2f%%\n", quote.Quote["USD"].PercentChange24H)
 	}
 
 	quoteString := fmt.Sprintf("%s\n%s", priceString, percentChange24HString)
@@ -78,10 +79,17 @@ func GetJSONPayload(content string, avatarURL string) (io.Reader, error) {
 
 }
 
-// SendWHReq ---
-func SendWHReq(webhookURL string, payload io.Reader) error {
+func ExecWebhook(coin string, avatarURL string) error {
 
-	req, err := http.NewRequest("POST", webhookURL, payload)
+	quotes, err := GetCoinQuotes(coin)
+	wrapfQuoteError(err, coin)
+
+	payload, err := GetJSONPayload(quotes, avatarURL)
+	if err != nil {
+		return errors.Wrap(err, "Failed to get JSON payload")
+	}
+
+	req, err := http.NewRequest("POST", os.Getenv("DISCORD_WEBHOOK_URL"), payload)
 	if err != nil {
 		return errors.Wrap(err, "Failed to execute HTTP request")
 	}
@@ -95,24 +103,6 @@ func SendWHReq(webhookURL string, payload io.Reader) error {
 		return errors.Wrap(err, "Failed to get HTTP response body")
 	}
 	defer res.Body.Close()
-
-	return nil
-}
-
-// ExecWebhook ---
-func ExecWebhook(coin string, avatarURL string) error {
-
-	quotes, err := GetCoinQuotes(coin)
-	wrapfQuoteError(err, coin)
-
-	payload, err := GetJSONPayload(quotes, avatarURL)
-	if err != nil {
-		return errors.Wrap(err, "Failed to get JSON payload")
-	}
-
-	if err = SendWHReq(webhookURL, payload); err != nil {
-		return errors.Wrap(err, "Failed to execute webhook")
-	}
 
 	return nil
 }
