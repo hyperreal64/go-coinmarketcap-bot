@@ -14,6 +14,8 @@ export DISCORD_WEBHOOK_URL
 export CMC_PRO_API_KEY
 ```
 
+What I do, is call this binary from a personalized script that exports the above environment variables, and have the script set to run with a systemd timer.
+
 ## TODO
 * Support potentially all cryptocurrencies
     + Abstract the cryptocurrency icon urls
